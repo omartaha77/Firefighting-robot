@@ -14,6 +14,9 @@ Servo myservo;
 #define pump 10
 bool AutoMode = true;
 
+// Function prototype
+void TurnOnPump();
+
 void setup() {
   pinMode(Left, INPUT);
   pinMode(Right, INPUT);
@@ -56,31 +59,37 @@ void AutonomousMode() {
   int rightValue = digitalRead(Right);
   int forwardValue = digitalRead(Forward);
 
-  if(forwardValue == HIGH){
-    analogWrite(ENA1, 128);
-    analogWrite(ENA2, 128);
-    digitalWrite(RM1, HIGH);
-    digitalWrite(RM2, LOW);
-    digitalWrite(LM1, HIGH);
-    digitalWrite(LM2, LOW);
-  }
-  if(leftValue == HIGH){
-    analogWrite(ENA1, 255);
-    analogWrite(ENA2, 255);
-    digitalWrite(RM1, HIGH);
-    digitalWrite(RM2, LOW);
-    digitalWrite(LM1, LOW);
-    digitalWrite(LM2, HIGH);
-  }
-  if(rightValue == HIGH){
-    analogWrite(ENA1, 255);
-    analogWrite(ENA2, 255);
+  if (forwardValue == HIGH) {
+    // Move forward if no obstacle ahead
     digitalWrite(RM1, LOW);
     digitalWrite(RM2, HIGH);
+    analogWrite(ENA1, 180);
+    digitalWrite(LM1,LOW);
+    digitalWrite(LM2, HIGH);
+    analogWrite(ENA2, 180);
+    delay(200);
+  }  
+  if (leftValue == HIGH) {
+    // Turn left if obstacle detected on the left
+    digitalWrite(RM1, LOW);
+    digitalWrite(RM2, HIGH);
+    analogWrite(ENA1, 255);
     digitalWrite(LM1, HIGH);
     digitalWrite(LM2, LOW);
+    analogWrite(ENA2, 255);
+    delay(300);
+  } 
+  if (rightValue == HIGH) {
+    // Turn right if obstacle detected on the right
+    digitalWrite(RM1, HIGH);
+    digitalWrite(RM2,LOW);
+    analogWrite(ENA1, 255);
+    digitalWrite(LM1, LOW);
+    digitalWrite(LM2, HIGH);
+    analogWrite(ENA2, 255);
+    delay(300);
   }
-  if(forwardValue == HIGH && rightValue == HIGH && leftValue == HIGH){
+  if (forwardValue == HIGH && rightValue == HIGH && leftValue == HIGH) {
     analogWrite(ENA1, 0);
     analogWrite(ENA2, 0);
     digitalWrite(RM1,LOW);
