@@ -9,118 +9,214 @@ Servo myservo;
 #define LM2 7       // left motor
 #define RM1 8       // right motor
 #define RM2 9       // right motor
-#define ENA1 5      // enable pin for motor 1
+#define ENA1 5      // enable pin for motor 13
 #define ENA2 11     // enable pin for motor 2
 #define pump 10
-bool AutoMode = true;
+//#define modeSwitch 13 // switch to toggle between manual and automatic modes
 
-// Function prototype
-void TurnOnPump();
+bool AutoMode = false;
+  int fire = false ;
+  char mode ;
+
+void forward() {
+  analogWrite(ENA1, 100);
+  analogWrite(ENA2, 100);
+  digitalWrite(LM1, LOW);
+  digitalWrite(LM2, HIGH);
+  digitalWrite(RM1, LOW);
+  digitalWrite(RM2, HIGH);
+}
+
+void backward() {
+  analogWrite(ENA1, 100);
+  analogWrite(ENA2, 100);
+  digitalWrite(LM1, HIGH);
+  digitalWrite(LM2, LOW);
+  digitalWrite(RM1, HIGH);
+  digitalWrite(RM2, LOW);
+}
+
+void right() {
+  analogWrite(ENA1, 100);
+  analogWrite(ENA2, 80);
+  digitalWrite(LM1, LOW);
+  digitalWrite(LM2, HIGH);
+  digitalWrite(RM1, HIGH);
+  digitalWrite(RM2, LOW);
+
+
+}
+
+void left() {
+  analogWrite(ENA1, 80);
+  analogWrite(ENA2, 100);
+  digitalWrite(LM1, HIGH);
+  digitalWrite(LM2, LOW);
+  digitalWrite(RM1, LOW);
+  digitalWrite(RM2, HIGH);
+}
+
+void stop() {
+  analogWrite(ENA1, 0);
+  analogWrite(ENA2, 0);
+  digitalWrite(LM1, LOW);
+  digitalWrite(LM2, LOW);
+  digitalWrite(RM1, LOW);
+  digitalWrite(RM2, LOW);
+}
+
+void TurnOnPump() {
+   digitalWrite(pump, HIGH);
+bool x = digitalRead(pump);
+  
+  if (x==HIGH){
+    Serial.println("mmmmmmmmmmmmmmmmmm");
+  }
+  // digitalWrite(pump, HIGH);
+  //delay(500);
+
+  for (int i = 50; i <= 130; i++) {
+    myservo.write(i);
+    delay(10);
+  }
+  for (int i = 130; i >= 50; i--) {
+    myservo.write(i);
+    delay(10);
+  }
+  for (int i = 50; i <= 130; i++) {
+    myservo.write(i);
+    delay(10);
+  }
+  for (int i = 130; i >= 50; i--) {
+    myservo.write(i);
+    delay(10);
+  }
+  
+  //digitalWrite(pump, LOW);
+  myservo.write(90);
+  fire = false;
+}
 
 void setup() {
   pinMode(Left, INPUT);
   pinMode(Right, INPUT);
   pinMode(Forward, INPUT);
   pinMode(LM1, OUTPUT);
-  pinMode(LM2, OUTPUT);
+  pinMode(LM2, OUTPUT );
   pinMode(RM1, OUTPUT);
   pinMode(RM2, OUTPUT);
   pinMode(pump, OUTPUT);
-  myservo.attach(13);
+  pinMode(ENA1, OUTPUT);
+   pinMode(ENA2, OUTPUT);
+
+  //pinMode(modeSwitch, INPUT_PULLUP); // Set modeSwitch pin as INPUT_PULLUP
+  
+  myservo.attach(12);
   myservo.write(90);
 
-  Serial.begin(9600); 
+  Serial.begin(9600);
 }
 
-void loop() {
-  if (Serial.available()) { 
-    char command = Serial.read(); 
-    if (command == 'A') {
-      AutoMode = true;
-    } else if (command == 'M') {
-      AutoMode = false;
-    }
-  }
-  
-  if (AutoMode) {
-    AutonomousMode();
-  } else {
-    ManualMode();
-  }
-  delay(100);
-}
+// void ManualMode() {
+//  // if (Serial.available()) {
+//     char command = Serial.read();
+//     switch (command) {
+//       case 'F':
+//         forward();
+//         break;
+//       case 'B':
+//         backward();
+//         break;
+//       case 'R':
+//         right();
+//         break;
+//       case 'L':
+//         left();
+//         break;
+//       case 'S':
+//         stop();
+//         break;
+//       case 'P':
+//         TurnOnPump();
+//         break;
+//     }
+//   }
 
-void ManualMode() {
-  //  manual mode 
-}
+//}
 
 void AutonomousMode() {
   int leftValue = digitalRead(Left);
   int rightValue = digitalRead(Right);
   int forwardValue = digitalRead(Forward);
+  Serial.println("automode is onnnnnn");
 
-  if (forwardValue == HIGH) {
-    // Move forward if no obstacle ahead
-    digitalWrite(RM1, LOW);
-    digitalWrite(RM2, HIGH);
-    analogWrite(ENA1, 180);
-    digitalWrite(LM1,LOW);
-    digitalWrite(LM2, HIGH);
-    analogWrite(ENA2, 180);
-    delay(200);
-  }  
-  if (leftValue == HIGH) {
-    // Turn left if obstacle detected on the left
-    digitalWrite(RM1, LOW);
-    digitalWrite(RM2, HIGH);
-    analogWrite(ENA1, 255);
-    digitalWrite(LM1, HIGH);
-    digitalWrite(LM2, LOW);
-    analogWrite(ENA2, 255);
+  if (forwardValue == 0 && rightValue == 1 && leftValue == 1) {
+    forward();
+    fire = true ;
     delay(300);
-  } 
-  if (rightValue == HIGH) {
-    // Turn right if obstacle detected on the right
-    digitalWrite(RM1, HIGH);
-    digitalWrite(RM2,LOW);
-    analogWrite(ENA1, 255);
-    digitalWrite(LM1, LOW);
-    digitalWrite(LM2, HIGH);
-    analogWrite(ENA2, 255);
-    delay(300);
+    Serial.print("iam in the cursed function !!!!!!!!!!!!!");
   }
-  if (forwardValue == HIGH && rightValue == HIGH && leftValue == HIGH) {
-    analogWrite(ENA1, 0);
-    analogWrite(ENA2, 0);
-    digitalWrite(RM1,LOW);
-    digitalWrite(RM2,LOW);
-    digitalWrite(LM1,LOW);
-    digitalWrite(LM2,LOW);
-    TurnOnPump();
+  else if (leftValue == 0 && rightValue == 1 && forwardValue == 1) {
+  left();
+  delay(300);
+    Serial.print("INSIDE LEFT !!!!!!!!!!!!!");
+
+  }
+  else if (leftValue == 1 && rightValue == 0 && forwardValue == 1) {
+  right();
+  delay(300);
+
+  }
+  else if (forwardValue == 1 && rightValue == 1 && leftValue == 1) {
+    stop();
+    // TurnOnPump();
+  }
+  while(fire){
+    stop();
+    TurnOnPump() ;
   }
 }
 
-void TurnOnPump() {
-  digitalWrite(pump,HIGH);
-  delay(500); //to give the pump chance to startup
 
-  for(int i = 50; i <= 130 ; i++){
-    myservo.write(i);
-    delay(10);
-  }
-  for(int i = 130; i >= 50 ; i--){
-    myservo.write(i);
-    delay(10);                        //so that servo makes 2 cycles
-  }
-  for(int i = 50; i <= 130 ; i++){
-    myservo.write(i);
-    delay(10);
-  }
-  for(int i = 130; i >= 50 ; i--){
-    myservo.write(i);
-    delay(10);
+
+void loop() {
+  if (Serial.available()) {
+     mode = Serial.read();
+    // if (mode == 'M') {
+    //   AutoMode = false;
+    if (mode == 'F' || mode=='R' || mode == 'B' ||  mode == 'L' ||  mode == 'S' || mode == 'P' ) {
+      switch (mode) {
+        case 'F':
+          forward();
+          break;
+        case 'B':
+          backward();
+          break;
+        case 'R':
+          right();
+          break;
+        case 'L':
+          left();
+          break;
+        case 'S':
+          stop();
+          break;
+        case 'P':
+          TurnOnPump();
+          break;
+          }
+} // Set manual mode
+    else if (mode == 'A') {
+      AutoMode = true;  // Set automatic mode
+    }
   }
 
-  digitalWrite(pump,LOW);
-  myservo.write(90);
+  if (AutoMode) {
+    AutonomousMode();
+  }
+  //  else {
+  //   ManualMode();
+  // }
+  
 }
+
